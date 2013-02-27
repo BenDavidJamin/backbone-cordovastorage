@@ -1,0 +1,12 @@
+{
+  "name": "Backbone CordovaStorage",
+  "version": "1.0.0",
+  "dependencies": {
+    "requirejs": null,
+    "jquery": null,
+    "backbone-amd": null,
+    "underscore-amd": null,
+    "normalize": "https://github.com/necolas/normalize.css.git",
+    "async": "https://github.com/caolan/async.git"
+  }
+}
