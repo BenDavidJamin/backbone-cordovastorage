@@ -8,21 +8,21 @@
 define(['underscore', 'backbone'], function (_, Backbone) {
 
   /**
-   * [S4 description]
+   * [Creates a random s4 string]
    * @method S4
    */
   function S4() {
      return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-  };
+  }
 
   /**
-   * [guid description]
+   * [Creates a guid id.]
    * @method guid
-   * @return {[type]} [description]
+   * @return {String} [A guid String]
    */
   function guid() {
      return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-  };
+  }
 
   /**
    * [Store description]
@@ -30,37 +30,37 @@ define(['underscore', 'backbone'], function (_, Backbone) {
    * @param  {[type]} cordovaStore [description]
    */
   Backbone.CordovaStorage = window.Store = function(cordovaStore){
-	  
-	_.bindAll(this, "_tableCheck", "_insertData", "_updateData", "_destroyData", "_findData");
+
+  _.bindAll(this, "_tableCheck", "_insertData", "_updateData", "_destroyData", "_findData");
     this.cordovaStore = cordovaStore;
     this.store = window.openDatabase(this.cordovaStore.name, this.cordovaStore.version,
                           this.cordovaStore.description, this.cordovaStore.size);
 
     this.store.transaction(this._tableCheck,
-    		this.errorCB,
-    		this.successCB);
+      this.errorCB,
+      this.successCB);
   };
 
   _.extend(Backbone.CordovaStorage.prototype, {
 
     /**
-     * [save description]
+     * [Saves the model to the database.]
      * @method save
      * @return {[type]} [description]
      */
     save: function(model){
       var that = this;
       this.store.transaction(
-		  function(tx){
-		    that._insertData(tx, model)
-		  },
-		  this.errorCB,
-		  this.successCB
-		);
+        function(tx){
+          that._insertData(tx, model);
+        },
+        this.errorCB,
+        this.successCB
+      );
     },
 
     /**
-     * [create description]
+     * [Inserts the model into the database.]
      * @method create
      * @param  {[type]} model [description]
      * @return {[type]}       [description]
@@ -75,7 +75,8 @@ define(['underscore', 'backbone'], function (_, Backbone) {
     },
 
     /**
-     * [update description]
+     * [Takes the new model attibutes and applies them to the
+     * row with the id that matches the given model.]
      * @method update
      * @param  {[type]} model [description]
      * @return {[type]}       [description]
@@ -83,16 +84,17 @@ define(['underscore', 'backbone'], function (_, Backbone) {
     update: function(model){
       var that = this;
       this.store.transaction(
-	    function(tx){
-		  that._updateData(tx, model);
-	    },
-	    this.errorCB,
-	    this.successCB
-	  );
+        function(tx){
+          that._updateData(tx, model);
+        },
+        this.errorCB,
+        this.successCB
+      );
     },
 
     /**
-     * [find description]
+     * [Given the model we search the database table for a row with
+     * the model's given id.]
      * @method find
      * @param  {[type]} model [description]
      * @return {Promise}       [The promise of a value from the find function]
@@ -114,7 +116,7 @@ define(['underscore', 'backbone'], function (_, Backbone) {
     },
 
     /**
-     * [returns all of the rows in the database pertaining to the 
+     * [returns all of the rows in the database pertaining to the
      * table]
      * @method findAll
      * @return {Promise} Returns the promise of a value or an error message.
@@ -123,17 +125,16 @@ define(['underscore', 'backbone'], function (_, Backbone) {
       var deferred = new $.Deferred();
       var that = this;
       this.store.transaction(
-    	function(tx){
-    		that._findData(tx, undefined, deferred);
-    	},
+        function(tx){
+          that._findData(tx, undefined, deferred);
+        },
         function(err){
-    	  that.errorCB(err, deferred);
-    	},
+          that.errorCB(err, deferred);
+        },
         function(){
-    	  that.successCB();
-    	}
+          that.successCB();
+        }
       );
-
       return deferred.promise();
     },
 
@@ -165,29 +166,27 @@ define(['underscore', 'backbone'], function (_, Backbone) {
       // If there is a deferred passed in reject with
       // the error message.
       if(typeof deferred !== "undefined"){
-    	  deferred.rejectWith(this, [err]);
+        deferred.rejectWith(this, [err]);
       }
       console.log(err.code, err.message);
     },
 
     successCB: function (deferred){
       if(typeof deferred !== "undefined"){
-    	  deferred.resolve();
+        deferred.resolve();
       }
       console.log("success!");
     },
 
     _tableCheck: function (tx){
-    	
       var that = this;
-    	
       //Make sure the id is unique if initiated so in the config
       var tableRecords = _.map(that.cordovaStore.records, function(record){
-    	  if(record == "id" && that.cordovaStore.idUnique){
-    		  return "id unique";
-    	  }else{
-    		  return record;
-    	  }
+        if(record == "id" && that.cordovaStore.idUnique){
+          return "id unique";
+        }else{
+          return record;
+        }
       });
       //tx.executeSql('DROP TABLE IF EXISTS '+that.cordovaStore.tableName);
       tx.executeSql('CREATE TABLE IF NOT EXISTS '+that.cordovaStore.tableName+' ('+ tableRecords.join(",")+')');
@@ -230,22 +229,21 @@ define(['underscore', 'backbone'], function (_, Backbone) {
       var that = this;
       var queryString = "";
       if(typeof query !== "undefined"){
-    	  queryString = " WHERE "+query;
+        queryString = " WHERE "+query;
       }
-      tx.executeSql('SELECT * FROM '+this.cordovaStore.tableName +" "+queryString, [], 
-    		  function(tx, results){
-    	  		//not a huge fan of SQLResultSetRowList
-    	  		var resultsList = [];
-    	  		for(var i = 0;i< results.rows.length;i++){
-    	  			resultsList.push(results.rows.item(i));
-    	  		}
-    	  		deferred.resolveWith(this,[resultsList]);
-      		  },
-      		  function(err){
-      			that.errorCB(err,deferred);  
-      		  }
-      	      
-      ); 
+      tx.executeSql('SELECT * FROM '+this.cordovaStore.tableName +" "+queryString, [],
+        function(tx, results){
+          //not a huge fan of SQLResultSetRowList
+          var resultsList = [];
+          for(var i = 0;i< results.rows.length;i++){
+            resultsList.push(results.rows.item(i));
+          }
+          deferred.resolveWith(this,[resultsList]);
+        },
+        function(err){
+          that.errorCB(err,deferred);
+        }
+      );
     }
   });
 
@@ -269,10 +267,10 @@ Backbone.CordovaStorage.sync = window.Store.sync = Backbone.cordovaSync = functi
   }
   
   resp.done(function(results){
-	options.success(model, results, options);
+    options.success(model, results, options);
   });
   resp.fail(function(err){
-	options.error(model, err, options);
+    options.error(model, err, options);
   });
 };
 
