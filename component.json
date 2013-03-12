@@ -1,5 +1,5 @@
 {
-  "name": "Backbone CordovaStorage",
+  "name": "Backbone-CordovaStorage",
   "version": "1.0.0",
   "dependencies": {
     "requirejs": null,
